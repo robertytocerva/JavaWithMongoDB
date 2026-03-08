@@ -1,6 +1,8 @@
 package cxt.robertytocerva;
 
 import com.mongodb.MongoException;
+import com.mongodb.client.MongoCollection;
+import cxt.robertytocerva.entidad.Article;
 import cxt.robertytocerva.repository.ConexionMongoDB;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,18 @@ public class Main {
         }
         mongoDB.mostrarInfoCluster();
         mongoDB.mostradDB();
+
+        MongoCollection<Article> articulos;
+        try {
+            articulos = (MongoCollection<Article>) mongoDB.getCollections("tienda", "articulos", Article.class);
+
+        } catch (Exception e) {
+            mongoDB.closeConection();
+            logger.error("NO se puedo acceder a la coleccion");
+            logger.error("Error:" + e.getMessage());
+            return;
+        }
+        logger.info("Se ha accedio a la coleccion articulos");
         mongoDB.closeConection();
 
     }
