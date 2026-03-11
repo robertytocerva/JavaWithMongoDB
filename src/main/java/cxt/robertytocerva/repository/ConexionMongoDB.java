@@ -29,7 +29,6 @@ public class ConexionMongoDB {
         try {
             ConfigFile configFile = new ConfigFile("db/mongodb.properties");
             properties = configFile.readPropiertiesFIle();
-            properties = configFile.readPropiertiesFIle();
         }catch (Exception e) {
             logger.error("Error recuperando conexion:" + e.getMessage());
             this.connectionString = null;
@@ -118,7 +117,28 @@ public class ConexionMongoDB {
         return database;
     }
 
-    public MongoCollection<?> getCollections(String databaseName, String collectionName, Class entidad) throws Exception{
+    public MongoDatabase getDatabase(String databaseName) throws Exception {
+        if (this.client == null) {
+            if (!this.crearConeccion()) {
+                throw new Exception("No se pudo acceder a la conexion");
+            }
+        }
+
+
+        MongoDatabase database = this.client.getDatabase(databaseName);
+
+        if (!getPing(database)) {
+            throw new Exception("No se pudo acceder a la base de datos");
+        }
+        return database;
+    }
+
+    public <T> MongoCollection<T> getCollections(String databaseName, String collectionName, Class<T> entidad) throws Exception{
+        MongoDatabase database = getDatabaseWhitCodec(databaseName);
+        return database.getCollection(collectionName, entidad);
+    }
+
+    public <T> MongoCollection<T> getRecordCollections(String databaseName, String collectionName, Class<T> entidad) throws Exception{
         MongoDatabase database = getDatabaseWhitCodec(databaseName);
         return database.getCollection(collectionName, entidad);
     }

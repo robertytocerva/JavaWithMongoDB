@@ -1,7 +1,9 @@
-package cxt.robertytocerva.entidad;
+package cxt.robertytocerva.entidades;
+
+import org.bson.types.ObjectId;
 
 public class Article {
-    private Object id;
+    private ObjectId id;
     private String nombre;
     private  int cantidad;
     private  double precio;
@@ -9,18 +11,18 @@ public class Article {
     public Article() {
     }
 
-    public Article(Object id, String nombre, int cantidad, double precio) {
+    public Article(ObjectId id, String nombre, int cantidad, double precio) {
         this.id = id;
         this.nombre = nombre;
         this.cantidad = cantidad;
         this.precio = precio;
     }
 
-    public Object getId() {
+    public ObjectId getId() {
         return id;
     }
 
-    public void setId(Object id) {
+    public void setId(ObjectId id) {
         this.id = id;
     }
 
