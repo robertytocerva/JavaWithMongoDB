@@ -17,9 +17,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 public class ConexionMongoDB {
     private final Logger logger = LoggerFactory.getLogger(ConexionMongoDB.class);
+
+    private int minPoolSize;
+    private int maxPoolSize;
+    private int maxWaitTime;
+    private int maxLifeTime;
+    private int maxIdleTime;
+    private String appName;
     private final ConnectionString connectionString;
     private MongoClient client = null;
 
@@ -29,6 +37,12 @@ public class ConexionMongoDB {
         try {
             ConfigFile configFile = new ConfigFile("db/mongodb.properties");
             properties = configFile.readPropiertiesFIle();
+            this.minPoolSize = Integer.parseInt(properties.getProperty("minPoolSize"));
+            this.maxPoolSize = Integer.parseInt(properties.getProperty("maxPoolSize"));
+            this.maxWaitTime = Integer.parseInt(properties.getProperty("maxWaitTime"));
+            this.maxLifeTime = Integer.parseInt(properties.getProperty("maxLifeTime"));
+            this.maxIdleTime = Integer.parseInt(properties.getProperty("maxIdleTime"));
+            this.appName = properties.getProperty("appName");
         }catch (Exception e) {
             logger.error("Error recuperando conexion:" + e.getMessage());
             this.connectionString = null;
@@ -58,15 +72,31 @@ public class ConexionMongoDB {
     }
 
     public boolean crearConeccion() throws MongoException {
-        if (this.connectionString == null) {
+        /*if (this.connectionString == null) {
             logger.error("No hay conexion establecida");
             return false;
-        }
+        }*/
         try {
-            MongoClient mongoClient = MongoClients.create(connectionString);
-            MongoDatabase database = mongoClient.getDatabase("admin");
+            /*MongoClient mongoClient = MongoClients.create(connectionString);
+            M*/
 
+            MongoClient mongoClient = MongoClients.create(
+                    MongoClientSettings.builder()
+                            .applicationName(this.appName)
+                            .applyConnectionString(this.connectionString)
+                            .applyToConnectionPoolSettings(builder -> builder
+                                    .minSize(this.minPoolSize)
+                                    .maxSize(this.maxPoolSize)
+                                    .maxWaitTime(this.maxWaitTime, TimeUnit.SECONDS)
+                                    .maxConnectionLifeTime(this.maxLifeTime, TimeUnit.SECONDS)
+                                    .maxConnectionIdleTime(this.maxIdleTime, TimeUnit.SECONDS)
+                            )
+                            .build()
+            );
+
+            MongoDatabase database = mongoClient.getDatabase("admin");
             if (getPing(database)) {
+
                 this.client = mongoClient;
                 return true;
             }
